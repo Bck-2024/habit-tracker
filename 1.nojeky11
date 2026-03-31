@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>Habit Tracker</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="hero-card">
+      <div>
+        <p class="hero-eyebrow">GOOD-BCK</p>
+        <h1>我的积分系统</h1>
+        <p class="hero-subtitle">记录习惯、积累积分、兑换奖励</p>
+      </div>
+      <div class="hero-badge">持续打卡，慢慢变强</div>
+    </header>
+
+    <div class="card points-card">
+      <div class="section-head">
+        <h2>当前积分</h2>
+        <span class="section-tag">Balance</span>
+      </div>
+      <p id="points">加载中...</p>
+    </div>
+
+    <div class="card form-card">
+      <div class="section-head">
+        <h2>新增习惯</h2>
+        <span class="section-tag">Habit</span>
+      </div>
+
+      <div class="inline-form-row form-spacing-lg">
+        <input id="habit-name-input" type="text" placeholder="习惯名称，例如：刷牙" />
+        <input id="habit-score-input" type="number" placeholder="积分" min="1" />
+      </div>
+
+      <div class="form-spacing-lg">
+        <label for="habit-rule-type">打卡规则：</label>
+        <select id="habit-rule-type">
+          <option value="daily">每日</option>
+          <option value="weekly">每周</option>
+          <option value="interval">间隔天数</option>
+        </select>
+      </div>
+
+      <div id="daily-rule-box" class="rule-box">
+        <div>可打卡日期：</div>
+        <div id="weekday-group" class="weekday-group">
+          <label><input type="checkbox" value="1" checked />周一</label>
+          <label><input type="checkbox" value="2" checked />周二</label>
+          <label><input type="checkbox" value="3" checked />周三</label>
+          <label><input type="checkbox" value="4" checked />周四</label>
+          <label><input type="checkbox" value="5" checked />周五</label>
+          <label><input type="checkbox" value="6" checked />周六</label>
+          <label><input type="checkbox" value="7" checked />周日</label>
+        </div>
+
+        <div>
+          <label for="daily-times-input">每天最多打卡次数：</label>
+          <input id="daily-times-input" type="number" min="1" value="1" />
+        </div>
+      </div>
+
+      <div id="weekly-rule-box" class="rule-box" style="display:none;">
+        <label for="weekly-times-input">每周最多打卡次数（1~6）：</label>
+        <input id="weekly-times-input" type="number" min="1" max="6" value="3" />
+      </div>
+
+      <div id="interval-rule-box" class="rule-box" style="display:none;">
+        <label for="interval-days-input">间隔天数：</label>
+        <input id="interval-days-input" type="number" min="1" value="8" />
+      </div>
+
+      <button id="add-habit-btn">添加习惯</button>
+    </div>
+
+    <div class="card list-card">
+      <div class="section-head">
+        <h2>习惯列表</h2>
+        <span class="section-tag">List</span>
+      </div>
+      <div id="habit-list"></div>
+    </div>
+
+    <div class="card form-card">
+      <div class="section-head">
+        <h2>新增奖励</h2>
+        <span class="section-tag">Reward</span>
+      </div>
+      <div class="inline-form-row">
+        <input id="reward-name-input" type="text" placeholder="奖励名称，例如：喝奶茶" />
+        <input id="reward-cost-input" type="number" placeholder="需要积分" min="1" />
+        <button id="add-reward-btn">添加奖励</button>
+      </div>
+    </div>
+
+    <div class="card list-card">
+      <div class="section-head">
+        <h2>奖励商城</h2>
+        <span class="section-tag">Store</span>
+      </div>
+      <div id="reward-list"></div>
+    </div>
+
+    <div class="card list-card">
+      <div class="section-head">
+        <h2>最近记录</h2>
+        <span class="section-tag">Timeline</span>
+      </div>
+      <div id="record-list"></div>
+    </div>
+
+    <div class="card status-card">
+      <div class="section-head">
+        <h2>状态</h2>
+        <span class="section-tag">Debug</span>
+      </div>
+      <p id="status">正在初始化...</p>
+    </div>
+  </div>
+
+  <div id="status-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h3 id="modal-title">提示</h3>
+      <p id="modal-message">这里是提示内容</p>
+      <button id="modal-ok-btn">OK</button>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
