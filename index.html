@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>GOOD-BCK</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div class="container compact-layout">
+    <header class="hero-card">
+      <div>
+        <p class="hero-eyebrow">GOOD-BCK</p>
+        <h1>我的积分系统</h1>
+        <p class="hero-subtitle">记录习惯、积累积分、兑换奖励</p>
+      </div>
+      <div class="hero-badge">持续打卡，慢慢变强</div>
+    </header>
+
+    <div class="card points-card points-toolbar-card">
+      <div class="points-main">
+        <div class="section-head">
+          <h2>当前积分</h2>
+          <span class="section-tag">Balance</span>
+        </div>
+        <p id="points">加载中...</p>
+      </div>
+      <div class="points-actions">
+        <button id="open-add-habit-modal-btn" class="secondary-btn">+ 习惯</button>
+        <button id="open-add-reward-modal-btn" class="secondary-btn">+ 奖励</button>
+        <button id="reset-points-btn" class="danger-btn">清零</button>
+      </div>
+    </div>
+
+    <div class="card list-card">
+      <div class="section-head">
+        <h2>习惯列表</h2>
+        <span class="section-tag">List</span>
+      </div>
+      <div id="habit-list"></div>
+    </div>
+
+    <div class="card list-card">
+      <div class="section-head">
+        <h2>奖励商城</h2>
+        <span class="section-tag">Store</span>
+      </div>
+      <div id="reward-list"></div>
+    </div>
+
+    <div class="card list-card">
+      <div class="section-head">
+        <h2>最近记录</h2>
+        <div class="section-head-actions">
+          <span class="section-tag">Timeline</span>
+          <button id="open-all-records-btn" class="text-btn">展开查看全部</button>
+        </div>
+      </div>
+      <div id="record-list"></div>
+    </div>
+
+    <div class="card status-card">
+      <div class="section-head">
+        <h2>状态</h2>
+        <span class="section-tag">Debug</span>
+      </div>
+      <p id="status">正在初始化...</p>
+    </div>
+  </div>
+
+  <div id="status-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h3 id="modal-title">提示</h3>
+      <p id="modal-message">这里是提示内容</p>
+      <button id="modal-ok-btn">OK</button>
+    </div>
+  </div>
+
+  <div id="habit-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel modal-form-panel" role="dialog" aria-modal="true" aria-labelledby="habit-modal-title">
+      <div class="modal-header">
+        <h3 id="habit-modal-title">新增习惯</h3>
+        <button id="close-habit-modal-btn" class="icon-btn" type="button" aria-label="关闭">×</button>
+      </div>
+
+      <div class="inline-form-row form-spacing-lg">
+        <input id="habit-name-input" type="text" placeholder="习惯名称，例如：刷牙" />
+        <input id="habit-score-input" type="number" placeholder="积分" min="1" />
+      </div>
+
+      <div class="form-spacing-lg">
+        <label for="habit-rule-type">打卡规则：</label>
+        <select id="habit-rule-type">
+          <option value="daily">每日</option>
+          <option value="weekly">每周</option>
+          <option value="interval">间隔天数</option>
+        </select>
+      </div>
+
+      <div id="daily-rule-box" class="rule-box">
+        <div>可打卡日期：</div>
+        <div id="weekday-group" class="weekday-group">
+          <label><input type="checkbox" value="1" checked />周一</label>
+          <label><input type="checkbox" value="2" checked />周二</label>
+          <label><input type="checkbox" value="3" checked />周三</label>
+          <label><input type="checkbox" value="4" checked />周四</label>
+          <label><input type="checkbox" value="5" checked />周五</label>
+          <label><input type="checkbox" value="6" checked />周六</label>
+          <label><input type="checkbox" value="7" checked />周日</label>
+        </div>
+
+        <div>
+          <label for="daily-times-input">每天最多打卡次数：</label>
+          <input id="daily-times-input" type="number" min="1" value="1" />
+        </div>
+      </div>
+
+      <div id="weekly-rule-box" class="rule-box" style="display:none;">
+        <label for="weekly-times-input">每周最多打卡次数（1~6）：</label>
+        <input id="weekly-times-input" type="number" min="1" max="6" value="3" />
+      </div>
+
+      <div id="interval-rule-box" class="rule-box" style="display:none;">
+        <label for="interval-days-input">间隔天数：</label>
+        <input id="interval-days-input" type="number" min="1" value="8" />
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancel-habit-modal-btn" class="ghost-btn" type="button">取消</button>
+        <button id="add-habit-btn" type="button">保存习惯</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reward-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel modal-form-panel" role="dialog" aria-modal="true" aria-labelledby="reward-modal-title">
+      <div class="modal-header">
+        <h3 id="reward-modal-title">新增奖励</h3>
+        <button id="close-reward-modal-btn" class="icon-btn" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="inline-form-row form-spacing-lg">
+        <input id="reward-name-input" type="text" placeholder="奖励名称，例如：喝奶茶" />
+        <input id="reward-cost-input" type="number" placeholder="需要积分" min="1" />
+      </div>
+      <div class="modal-actions">
+        <button id="cancel-reward-modal-btn" class="ghost-btn" type="button">取消</button>
+        <button id="add-reward-btn" type="button">保存奖励</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="records-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel modal-scroll-panel" role="dialog" aria-modal="true" aria-labelledby="records-modal-title">
+      <div class="modal-header">
+        <h3 id="records-modal-title">全部记录</h3>
+        <button id="close-records-modal-btn" class="icon-btn" type="button" aria-label="关闭">×</button>
+      </div>
+      <div id="all-record-list" class="records-scroll-area"></div>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel danger-modal-panel" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <h3 id="confirm-modal-title">危险操作确认</h3>
+      <p id="confirm-modal-message">此操作不可撤销。</p>
+      <div class="modal-actions">
+        <button id="confirm-cancel-btn" class="ghost-btn" type="button">取消</button>
+        <button id="confirm-ok-btn" class="danger-btn" type="button">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+<html>
