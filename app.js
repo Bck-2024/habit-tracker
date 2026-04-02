@@ -3,6 +3,21 @@ const modalTitleEl = document.getElementById("modal-title");
 const modalMessageEl = document.getElementById("modal-message");
 const modalOkBtn = document.getElementById("modal-ok-btn");
 
+const habitModalEl = document.getElementById("habit-modal");
+const rewardModalEl = document.getElementById("reward-modal");
+const recordsModalEl = document.getElementById("records-modal");
+
+const openAddHabitModalBtn = document.getElementById("open-add-habit-modal-btn");
+const openAddRewardModalBtn = document.getElementById("open-add-reward-modal-btn");
+const resetPointsBtn = document.getElementById("reset-points-btn");
+const openAllRecordsBtn = document.getElementById("open-all-records-btn");
+
+const closeHabitModalBtn = document.getElementById("close-habit-modal-btn");
+const cancelHabitModalBtn = document.getElementById("cancel-habit-modal-btn");
+const closeRewardModalBtn = document.getElementById("close-reward-modal-btn");
+const cancelRewardModalBtn = document.getElementById("cancel-reward-modal-btn");
+const closeRecordsModalBtn = document.getElementById("close-records-modal-btn");
+
 const pointsEl = document.getElementById("points");
 const habitListEl = document.getElementById("habit-list");
 const rewardListEl = document.getElementById("reward-list");
@@ -27,8 +42,38 @@ const rewardNameInput = document.getElementById("reward-name-input");
 const rewardCostInput = document.getElementById("reward-cost-input");
 const addRewardBtn = document.getElementById("add-reward-btn");
 
+function openPanelModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.classList.remove("hidden");
+}
 
+function closePanelModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.classList.add("hidden");
+}
 
+function resetHabitForm() {
+  if (habitNameInput) habitNameInput.value = "";
+  if (habitScoreInput) habitScoreInput.value = "";
+  if (dailyTimesInput) dailyTimesInput.value = "1";
+  if (weeklyTimesInput) weeklyTimesInput.value = "3";
+  if (intervalDaysInput) intervalDaysInput.value = "8";
+
+  if (habitRuleTypeSelect) {
+    habitRuleTypeSelect.value = "daily";
+  }
+
+  weekdayCheckboxes.forEach((checkbox) => {
+    checkbox.checked = true;
+  });
+
+  updateHabitRuleUI();
+}
+
+function resetRewardForm() {
+  if (rewardNameInput) rewardNameInput.value = "";
+  if (rewardCostInput) rewardCostInput.value = "";
+}
 let appData = null;
 
 function getAuthToken() {
@@ -449,6 +494,43 @@ function renderHabits(data) {
     actionWrap.style.display = "flex";
     actionWrap.style.gap = "8px";
 
+    const editBtn = document.createElement("button");
+    editBtn.dataset.variant = "secondary";
+    editBtn.textContent = "修改";
+    editBtn.style.padding = "6px 12px";
+    editBtn.style.border = "none";
+    editBtn.style.borderRadius = "8px";
+    editBtn.style.cursor = "pointer";
+    editBtn.addEventListener("click", () => {
+      if (habitNameInput) habitNameInput.value = habit.name ?? "";
+      if (habitScoreInput) habitScoreInput.value = String(habit.score ?? "");
+
+      const rule = normalizeHabitRule(habit);
+      if (habitRuleTypeSelect) {
+        habitRuleTypeSelect.value = rule.type;
+      }
+
+      weekdayCheckboxes.forEach((checkbox) => {
+        checkbox.checked = Array.isArray(rule.weekdays)
+          ? rule.weekdays.includes(Number(checkbox.value))
+          : true;
+      });
+
+      if (dailyTimesInput) {
+        dailyTimesInput.value = String(rule.timesPerDay ?? 1);
+      }
+      if (weeklyTimesInput) {
+        weeklyTimesInput.value = String(rule.timesPerWeek ?? 1);
+      }
+      if (intervalDaysInput) {
+        intervalDaysInput.value = String(rule.intervalDays ?? 1);
+      }
+
+      updateHabitRuleUI();
+      openPanelModal(habitModalEl);
+      setStatus(`已载入习惯：${habit.name}，可修改后重新保存`, { modal: true, title: "修改习惯", type: "info" });
+    });
+
     const completeBtn = document.createElement("button");
     completeBtn.dataset.variant = "primary";
     completeBtn.textContent = "完成";
@@ -471,6 +553,7 @@ function renderHabits(data) {
       await deleteHabit(habit);
     });
 
+    actionWrap.appendChild(editBtn);
     actionWrap.appendChild(completeBtn);
     actionWrap.appendChild(deleteBtn);
 
@@ -723,11 +806,8 @@ async function addHabit() {
     await saveData(appData);
     renderData(appData);
 
-    habitNameInput.value = "";
-    habitScoreInput.value = "";
-    dailyTimesInput.value = "1";
-    weeklyTimesInput.value = "3";
-    intervalDaysInput.value = "8";
+    resetHabitForm();
+    closePanelModal(habitModalEl);
     setStatus(`已添加习惯：${name}`, { modal: true, title: "新增习惯", type: "success" });
   } catch (error) {
     console.error(error);
@@ -832,8 +912,8 @@ async function addReward() {
     await saveData(appData);
     renderData(appData);
 
-    rewardNameInput.value = "";
-    rewardCostInput.value = "";
+    resetRewardForm();
+    closePanelModal(rewardModalEl);
     setStatus(`已添加奖励：${name}`, { modal: true, title: "新增奖励", type: "success" });
   } catch (error) {
     console.error(error);
@@ -922,6 +1002,22 @@ async function deleteRecord(record) {
   }
 }
 
+async function resetPoints() {
+  try {
+    const confirmed = window.confirm("确定清零积分吗？这不会删除习惯、奖励和历史记录。" );
+    if (!confirmed) return;
+
+    appData.points = 0;
+    setStatus("正在清零积分...");
+    await saveData(appData);
+    renderData(appData);
+    setStatus("积分已清零", { modal: true, title: "清零成功", type: "success" });
+  } catch (error) {
+    console.error(error);
+    setStatus(error.message, { modal: true, title: "清零失败", type: "error" });
+  }
+}
+
 async function init() {
   try {
     setStatus("正在读取云端数据...");
@@ -952,35 +1048,73 @@ async function init() {
   }
 }
 
-addHabitBtn.addEventListener("click", async () => {
+openAddHabitModalBtn?.addEventListener("click", () => {
+  resetHabitForm();
+  openPanelModal(habitModalEl);
+});
+
+openAddRewardModalBtn?.addEventListener("click", () => {
+  resetRewardForm();
+  openPanelModal(rewardModalEl);
+});
+
+resetPointsBtn?.addEventListener("click", async () => {
+  await resetPoints();
+});
+
+openAllRecordsBtn?.addEventListener("click", () => {
+  openPanelModal(recordsModalEl);
+});
+
+closeHabitModalBtn?.addEventListener("click", () => {
+  closePanelModal(habitModalEl);
+});
+
+cancelHabitModalBtn?.addEventListener("click", () => {
+  closePanelModal(habitModalEl);
+});
+
+closeRewardModalBtn?.addEventListener("click", () => {
+  closePanelModal(rewardModalEl);
+});
+
+cancelRewardModalBtn?.addEventListener("click", () => {
+  closePanelModal(rewardModalEl);
+});
+
+closeRecordsModalBtn?.addEventListener("click", () => {
+  closePanelModal(recordsModalEl);
+});
+
+addHabitBtn?.addEventListener("click", async () => {
   await addHabit();
 });
 
-habitNameInput.addEventListener("keydown", async (event) => {
+habitNameInput?.addEventListener("keydown", async (event) => {
   if (event.key === "Enter") {
     await addHabit();
   }
 });
 
-habitScoreInput.addEventListener("keydown", async (event) => {
+habitScoreInput?.addEventListener("keydown", async (event) => {
   if (event.key === "Enter") {
     await addHabit();
   }
 });
 
-habitRuleTypeSelect.addEventListener("change", updateHabitRuleUI);
+habitRuleTypeSelect?.addEventListener("change", updateHabitRuleUI);
 
-addRewardBtn.addEventListener("click", async () => {
+addRewardBtn?.addEventListener("click", async () => {
   await addReward();
 });
 
-rewardNameInput.addEventListener("keydown", async (event) => {
+rewardNameInput?.addEventListener("keydown", async (event) => {
   if (event.key === "Enter") {
     await addReward();
   }
 });
 
-rewardCostInput.addEventListener("keydown", async (event) => {
+rewardCostInput?.addEventListener("keydown", async (event) => {
   if (event.key === "Enter") {
     await addReward();
   }
